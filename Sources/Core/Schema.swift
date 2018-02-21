@@ -184,6 +184,33 @@ extension Schema {
         }
     }
 
+    /// e.g. NSString
+    func objcClassName(with generationParameters: GenerationParameters) -> String? {
+        switch self {
+        case let .object(objectRoot):
+            return objectRoot.className(with: generationParameters)
+        case .boolean, .integer, .float, .enumT:
+            return "NSNumber"
+        case .map:
+            return "NSDictionary"
+        case .array:
+            return "NSArray"
+        case .set:
+            return "NSSet"
+        case .string:
+            return "NSString"
+        case let .reference(with: ref):
+            return ref.force()!.objcClassName(with: generationParameters)
+        default:
+            return "UNHANDLED: \(debugDescription)"
+        }
+    }
+
+    /// e.g. [NSString class]
+    func objcClassInstance(with generationParameters: GenerationParameters) -> String? {
+        return objcClassName(with: generationParameters).flatMap { "[\($0) class]" }
+    }
+
     func extends() -> Schema? {
         switch self {
         case .object(let rootObject):

@@ -8,6 +8,8 @@
 
 #import "Image.h"
 
+#import <PINMessagePack/PINStreamingDecoding.h>
+
 struct ImageDirtyProperties {
     unsigned int ImageDirtyPropertyHeight:1;
     unsigned int ImageDirtyPropertyUrl:1;
@@ -98,6 +100,42 @@ struct ImageDirtyProperties {
     if ([self class] == [Image class]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kPlankDidInitializeNotification object:self userInfo:@{ kPlankInitTypeKey : @(initType) }];
     }
+    return self;
+}
+- (nullable instancetype)initWithStreamingDecoder:(id<PINStreamingDecoder>)decoder
+{
+    NSParameterAssert(decoder != nil);
+    if (!decoder) {
+        return nil;
+    }
+    if (!(self = [super init])) {
+        return self;
+    }
+    [decoder enumerateKeysInMapWithBlock:^(const char *key, NSUInteger keyLen) {
+        switch (keyLen) {
+        case 6:
+            if (!strncmp(key, "height", keyLen)) {
+                _height = [decoder decodeInteger];
+                _imageDirtyProperties.ImageDirtyPropertyHeight = 1;
+            }
+            break;
+        case 3:
+            if (!strncmp(key, "url", keyLen)) {
+                _url = [NSURL URLWithString:[decoder decodeObjectOfClass:[NSString class]]];
+                _imageDirtyProperties.ImageDirtyPropertyUrl = 1;
+            }
+            break;
+        case 5:
+            if (!strncmp(key, "width", keyLen)) {
+                _width = [decoder decodeInteger];
+                _imageDirtyProperties.ImageDirtyPropertyWidth = 1;
+            }
+            break;
+        case 0:
+            self = nil; return nil;
+            break;
+        }
+    }];
     return self;
 }
 - (NSString *)debugDescription

@@ -11,6 +11,7 @@
 @class BoardBuilder;
 @class Image;
 @class User;
+@protocol PINStreamingDecoder;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithModelDictionary:(NS_VALID_UNTIL_END_OF_SCOPE NSDictionary *)modelDictionary;
 - (instancetype)initWithBuilder:(BoardBuilder *)builder;
 - (instancetype)initWithBuilder:(BoardBuilder *)builder initType:(PlankModelInitType)initType;
+- (nullable instancetype)initWithStreamingDecoder:(id<PINStreamingDecoder>)decoder;
 - (instancetype)copyWithBlock:(PLANK_NOESCAPE void (^)(BoardBuilder *builder))block;
 - (BOOL)isEqualToBoard:(Board *)anObject;
 - (instancetype)mergeWithModel:(Board *)modelObject;

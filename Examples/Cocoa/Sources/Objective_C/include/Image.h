@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "PlankModelRuntime.h"
 @class ImageBuilder;
+@protocol PINStreamingDecoder;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithModelDictionary:(NS_VALID_UNTIL_END_OF_SCOPE NSDictionary *)modelDictionary;
 - (instancetype)initWithBuilder:(ImageBuilder *)builder;
 - (instancetype)initWithBuilder:(ImageBuilder *)builder initType:(PlankModelInitType)initType;
+- (nullable instancetype)initWithStreamingDecoder:(id<PINStreamingDecoder>)decoder;
 - (instancetype)copyWithBlock:(PLANK_NOESCAPE void (^)(ImageBuilder *builder))block;
 - (BOOL)isEqualToImage:(Image *)anObject;
 - (instancetype)mergeWithModel:(Image *)modelObject;

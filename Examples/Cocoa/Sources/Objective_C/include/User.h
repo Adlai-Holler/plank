@@ -10,6 +10,7 @@
 #import "PlankModelRuntime.h"
 @class Image;
 @class UserBuilder;
+@protocol PINStreamingDecoder;
 
 typedef NS_ENUM(NSInteger, UserEmailFrequency) {
     UserEmailFrequencyUnset /* unset */,
@@ -39,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithModelDictionary:(NS_VALID_UNTIL_END_OF_SCOPE NSDictionary *)modelDictionary;
 - (instancetype)initWithBuilder:(UserBuilder *)builder;
 - (instancetype)initWithBuilder:(UserBuilder *)builder initType:(PlankModelInitType)initType;
+- (nullable instancetype)initWithStreamingDecoder:(id<PINStreamingDecoder>)decoder;
 - (instancetype)copyWithBlock:(PLANK_NOESCAPE void (^)(UserBuilder *builder))block;
 - (BOOL)isEqualToUser:(User *)anObject;
 - (instancetype)mergeWithModel:(User *)modelObject;

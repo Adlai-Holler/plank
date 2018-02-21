@@ -18,6 +18,7 @@ public enum GenerationParameterType {
     case recursive
     case includeRuntime
     case indent
+    case includeStreamingDecode
 }
 
 public enum Languages: String {

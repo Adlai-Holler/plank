@@ -9,6 +9,8 @@
 #import "Image.h"
 #import "User.h"
 
+#import <PINMessagePack/PINStreamingDecoding.h>
+
 struct UserDirtyProperties {
     unsigned int UserDirtyPropertyBio:1;
     unsigned int UserDirtyPropertyCounts:1;
@@ -194,6 +196,76 @@ extern UserEmailFrequency UserEmailFrequencyFromString(NSString * _Nonnull str)
     if ([self class] == [User class]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kPlankDidInitializeNotification object:self userInfo:@{ kPlankInitTypeKey : @(initType) }];
     }
+    return self;
+}
+- (nullable instancetype)initWithStreamingDecoder:(id<PINStreamingDecoder>)decoder
+{
+    NSParameterAssert(decoder != nil);
+    if (!decoder) {
+        return nil;
+    }
+    if (!(self = [super init])) {
+        return self;
+    }
+    [decoder enumerateKeysInMapWithBlock:^(const char *key, NSUInteger keyLen) {
+        switch (keyLen) {
+        case 10:
+            if (!strncmp(key, "created_at", keyLen)) {
+                _createdAt = [[NSValueTransformer valueTransformerForName:kPlankDateValueTransformerKey] transformedValue:[decoder decodeObjectOfClass:[NSString class]]];
+                _userDirtyProperties.UserDirtyPropertyCreatedAt = 1;
+            }
+             else if (!strncmp(key, "first_name", keyLen)) {
+                _firstName = [decoder decodeObjectOfClass:[NSString class]];
+                _userDirtyProperties.UserDirtyPropertyFirstName = 1;
+            }
+            break;
+        case 2:
+            if (!strncmp(key, "id", keyLen)) {
+                _identifier = [decoder decodeObjectOfClass:[NSString class]];
+                _userDirtyProperties.UserDirtyPropertyIdentifier = 1;
+            }
+            break;
+        case 9:
+            if (!strncmp(key, "last_name", keyLen)) {
+                _lastName = [decoder decodeObjectOfClass:[NSString class]];
+                _userDirtyProperties.UserDirtyPropertyLastName = 1;
+            }
+            break;
+        case 6:
+            if (!strncmp(key, "counts", keyLen)) {
+                _counts = [decoder decodeDictionaryWithKeyClass:[NSString class] objectClass:[NSNumber class]];
+                _userDirtyProperties.UserDirtyPropertyCounts = 1;
+            }
+            break;
+        case 15:
+            if (!strncmp(key, "email_frequency", keyLen)) {
+                _emailFrequency = UserEmailFrequencyFromString([decoder decodeObjectOfClass:[NSString class]]);
+                _userDirtyProperties.UserDirtyPropertyEmailFrequency = 1;
+            }
+            break;
+        case 5:
+            if (!strncmp(key, "image", keyLen)) {
+                _image = [decoder decodeObjectOfClass:[Image class]];
+                _userDirtyProperties.UserDirtyPropertyImage = 1;
+            }
+            break;
+        case 3:
+            if (!strncmp(key, "bio", keyLen)) {
+                _bio = [decoder decodeObjectOfClass:[NSString class]];
+                _userDirtyProperties.UserDirtyPropertyBio = 1;
+            }
+            break;
+        case 8:
+            if (!strncmp(key, "username", keyLen)) {
+                _username = [decoder decodeObjectOfClass:[NSString class]];
+                _userDirtyProperties.UserDirtyPropertyUsername = 1;
+            }
+            break;
+        case 0:
+            self = nil; return nil;
+            break;
+        }
+    }];
     return self;
 }
 - (NSString *)debugDescription

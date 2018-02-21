@@ -11,6 +11,8 @@
 #import "Pin.h"
 #import "User.h"
 
+#import <PINMessagePack/PINStreamingDecoding.h>
+
 @interface PinAttributionObjects ()
 @property (nonatomic, assign, readwrite) PinAttributionObjectsInternalType internalType;
 @property (nonatomic, strong, readwrite) Board * value0;
@@ -385,6 +387,108 @@ struct PinDirtyProperties {
     if ([self class] == [Pin class]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kPlankDidInitializeNotification object:self userInfo:@{ kPlankInitTypeKey : @(initType) }];
     }
+    return self;
+}
+- (nullable instancetype)initWithStreamingDecoder:(id<PINStreamingDecoder>)decoder
+{
+    NSParameterAssert(decoder != nil);
+    if (!decoder) {
+        return nil;
+    }
+    if (!(self = [super init])) {
+        return self;
+    }
+    [decoder enumerateKeysInMapWithBlock:^(const char *key, NSUInteger keyLen) {
+        switch (keyLen) {
+        case 19:
+            if (!strncmp(key, "attribution_objects", keyLen)) {
+                _attributionObjects = [decoder decodeArrayOfClass:[UNHANDLED: OneOf    Reference to Examples/PDK/board.json
+                    Reference to Examples/PDK/user.json
+                 class]];
+                _pinDirtyProperties.PinDirtyPropertyAttributionObjects = 1;
+            }
+             else if (!strncmp(key, "visual_search_attrs", keyLen)) {
+                _visualSearchAttrs = [decoder decodeDictionaryWithKeyClass:[NSString class] objectClass:Nil];
+                _pinDirtyProperties.PinDirtyPropertyVisualSearchAttrs = 1;
+            }
+            break;
+        case 10:
+            if (!strncmp(key, "created_at", keyLen)) {
+                _createdAt = [[NSValueTransformer valueTransformerForName:kPlankDateValueTransformerKey] transformedValue:[decoder decodeObjectOfClass:[NSString class]]];
+                _pinDirtyProperties.PinDirtyPropertyCreatedAt = 1;
+            }
+            break;
+        case 2:
+            if (!strncmp(key, "id", keyLen)) {
+                _identifier = [decoder decodeObjectOfClass:[NSString class]];
+                _pinDirtyProperties.PinDirtyPropertyIdentifier = 1;
+            }
+            break;
+        case 4:
+            if (!strncmp(key, "link", keyLen)) {
+                _link = [NSURL URLWithString:[decoder decodeObjectOfClass:[NSString class]]];
+                _pinDirtyProperties.PinDirtyPropertyLink = 1;
+            }
+             else if (!strncmp(key, "note", keyLen)) {
+                _note = [decoder decodeObjectOfClass:[NSString class]];
+                _pinDirtyProperties.PinDirtyPropertyNote = 1;
+            }
+             else if (!strncmp(key, "tags", keyLen)) {
+                _tags = [decoder decodeArrayOfClass:[NSDictionary class]];
+                _pinDirtyProperties.PinDirtyPropertyTags = 1;
+            }
+            break;
+        case 5:
+            if (!strncmp(key, "board", keyLen)) {
+                _board = [decoder decodeObjectOfClass:[Board class]];
+                _pinDirtyProperties.PinDirtyPropertyBoard = 1;
+            }
+             else if (!strncmp(key, "color", keyLen)) {
+                _color = [decoder decodeObjectOfClass:[NSString class]];
+                _pinDirtyProperties.PinDirtyPropertyColor = 1;
+            }
+             else if (!strncmp(key, "image", keyLen)) {
+                _image = [decoder decodeObjectOfClass:[Image class]];
+                _pinDirtyProperties.PinDirtyPropertyImage = 1;
+            }
+             else if (!strncmp(key, "media", keyLen)) {
+                _media = [decoder decodeDictionaryWithKeyClass:[NSString class] objectClass:[NSString class]];
+                _pinDirtyProperties.PinDirtyPropertyMedia = 1;
+            }
+            break;
+        case 6:
+            if (!strncmp(key, "counts", keyLen)) {
+                _counts = [decoder decodeDictionaryWithKeyClass:[NSString class] objectClass:[NSNumber class]];
+                _pinDirtyProperties.PinDirtyPropertyCounts = 1;
+            }
+            break;
+        case 7:
+            if (!strncmp(key, "creator", keyLen)) {
+                _creator = [decoder decodeDictionaryWithKeyClass:[NSString class] objectClass:[User class]];
+                _pinDirtyProperties.PinDirtyPropertyCreator = 1;
+            }
+            break;
+        case 3:
+            if (!strncmp(key, "url", keyLen)) {
+                _url = [NSURL URLWithString:[decoder decodeObjectOfClass:[NSString class]]];
+                _pinDirtyProperties.PinDirtyPropertyUrl = 1;
+            }
+            break;
+        case 11:
+            if (!strncmp(key, "attribution", keyLen)) {
+                _attribution = [decoder decodeDictionaryWithKeyClass:[NSString class] objectClass:[NSString class]];
+                _pinDirtyProperties.PinDirtyPropertyAttribution = 1;
+            }
+             else if (!strncmp(key, "description", keyLen)) {
+                _descriptionText = [decoder decodeObjectOfClass:[NSString class]];
+                _pinDirtyProperties.PinDirtyPropertyDescriptionText = 1;
+            }
+            break;
+        case 0:
+            self = nil; return nil;
+            break;
+        }
+    }];
     return self;
 }
 - (NSString *)debugDescription

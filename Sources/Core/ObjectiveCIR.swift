@@ -284,7 +284,7 @@ public struct ObjCIR {
 
     enum Root {
         case structDecl(name: String, fields: [String])
-        case imports(classNames: Set<String>, myName: String, parentName: String?)
+        case imports(classNames: Set<String>, protocolNames: Set<String>, myName: String, parentName: String?)
         case category(className: String, categoryName: String?, methods: [ObjCIR.Method],
             properties: [SimpleProperty])
         case macro(String)
@@ -306,12 +306,12 @@ public struct ObjCIR {
                 return []
             case .macro(let macro):
                 return [macro]
-            case .imports(let classNames, let myName, let parentName):
+            case .imports(let classNames, let protocolNames, let myName, let parentName):
                 return [
                     "#import <Foundation/Foundation.h>",
                     parentName.map(ObjCIR.fileImportStmt) ?? "",
                     "#import \"\(ObjCRuntimeHeaderFile().fileName)\""
-                    ].filter { $0 != "" }  + (["\(myName)Builder"] + classNames).sorted().map { "@class \($0);" }
+                    ].filter { $0 != "" }  + (["\(myName)Builder"] + classNames).sorted().map { "@class \($0);" } + (protocolNames.map { "@protocol \($0);" } as [String])
             case .classDecl(let className, let extends, let methods, let properties, let protocols):
                 let protocolList = protocols.keys.sorted().joined(separator: ", ")
                 let protocolDeclarations = protocols.count > 0 ? "<\(protocolList)>" : ""
@@ -362,8 +362,10 @@ public struct ObjCIR {
             case .macro:
                 // skip macro in impl
                 return []
-            case .imports(let classNames, let myName, _):
-                return [classNames.union(Set([myName])).sorted().map(ObjCIR.fileImportStmt).joined(separator: "\n")]
+            case .imports(let classNames, _, let myName, _):
+                let imports = classNames.union(Set([myName])).sorted().map(ObjCIR.fileImportStmt)
+                + ["", "#import <PINMessagePack/PINStreamingDecoding.h>"]
+                return imports
             case .classDecl(name: let className, extends: _, methods: let methods, properties: _, protocols: let protocols):
                 return [
                     "@implementation \(className)",

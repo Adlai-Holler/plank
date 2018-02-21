@@ -167,7 +167,7 @@ public struct ObjCModelRenderer: ObjCFileRenderer {
         }
 
         return [
-            ObjCIR.Root.imports(classNames: self.renderReferencedClasses(), myName: self.className, parentName: parentName)
+            ObjCIR.Root.imports(classNames: self.renderReferencedClasses(), protocolNames: ["PINStreamingDecoder"], myName: self.className, parentName: parentName)
         ] + adtRoots + enumRoots + [
             ObjCIR.Root.structDecl(name: self.dirtyPropertyOptionName,
                                fields: rootSchema.properties.keys
@@ -198,6 +198,8 @@ public struct ObjCModelRenderer: ObjCFileRenderer {
                     (self.isBaseClass ? .publicM : .privateM, self.renderInitWithModelDictionary()),
                     (.publicM, self.renderInitWithBuilder()),
                     (self.isBaseClass ? .publicM : .privateM, self.renderInitWithBuilderWithInitType()),
+                    // TODO: Check the cmd line flag. The Swift compiler is making this very difficult.
+                    (self.isBaseClass ? .publicM : .privateM, self.renderInitWithStreamingDecoder()),
                     (.privateM, self.renderDebugDescription()),
                     (.publicM, self.renderCopyWithBlock()),
                     (.privateM, self.renderIsEqual()),

@@ -22,6 +22,7 @@ enum FlagOptions: String {
     case indent = "indent"
     case lang = "lang"
     case help = "help"
+    case streamingDecode = "include_streaming_decode"
 
     func needsArgument() -> Bool {
         switch self {
@@ -33,6 +34,7 @@ enum FlagOptions: String {
         case .onlyRuntime: return false
         case .lang: return true
         case .help: return false
+        case .streamingDecode: return false
         }
     }
 }
@@ -47,7 +49,8 @@ extension FlagOptions: HelpCommandOutput {
             "    --\(FlagOptions.onlyRuntime.rawValue) - Only generate runtime files and exit.",
             "    --\(FlagOptions.indent.rawValue) - Define a custom indentation.",
             "    --\(FlagOptions.lang.rawValue) - Comma separated list of target language(s) for generating code. Default: \"objc\"",
-            "    --\(FlagOptions.help.rawValue) - Show this text and exit."
+            "    --\(FlagOptions.help.rawValue) - Show this text and exit.",
+            "    --\(FlagOptions.streamingDecode.rawValue) - Experimental support for deserializing models using a streaming decoder."
         ].joined(separator: "\n")
     }
 }
@@ -127,12 +130,14 @@ func handleGenerateCommand(withArguments arguments: [String]) {
     let classPrefix: String? = flags[.objectiveCClassPrefix]
     let includeRuntime: String? = flags[.onlyRuntime] != nil || flags[.noRecursive] == nil ? .some("") : .none
     let indent: String? = flags[.indent]
+    let includeStreamingDecode: String? = flags[.streamingDecode] != nil ? "" : nil
 
     let generationParameters: GenerationParameters = [
         (.recursive, recursive),
         (.classPrefix, classPrefix),
         (.includeRuntime, includeRuntime),
-        (.indent, indent)
+        (.indent, indent),
+        (.includeStreamingDecode, includeStreamingDecode)
     ].reduce([:]) { (dict: GenerationParameters, tuple: (GenerationParameterType, String?)) in
             var d = dict
             if let v = tuple.1 {
