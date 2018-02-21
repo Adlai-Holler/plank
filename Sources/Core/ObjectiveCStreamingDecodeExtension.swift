@@ -17,27 +17,27 @@ extension ObjCModelRenderer {
             ) -> [String] {
             switch schema {
             case .string(format: .some(.uri)):
-                return ["\(propertyToAssign) = [NSURL URLWithString:[decoder decodeObjectOfClass:[NSString class]]];"]
+                return ["self->\(propertyToAssign) = [NSURL URLWithString:[decoder decodeObjectOfClass:[NSString class]]];"]
             case .string(format: .some(.dateTime)):
-                return ["\(propertyToAssign) = [[NSValueTransformer valueTransformerForName:\(dateValueTransformerKey)] transformedValue:[decoder decodeObjectOfClass:[NSString class]]];"]
+                return ["self->\(propertyToAssign) = [[NSValueTransformer valueTransformerForName:\(dateValueTransformerKey)] transformedValue:[decoder decodeObjectOfClass:[NSString class]]];"]
             case .string(format: .none):
-                return ["\(propertyToAssign) = [decoder decodeObjectOfClass:[NSString class]];"]
+                return ["self->\(propertyToAssign) = [decoder decodeObjectOfClass:[NSString class]];"]
             case .integer, .enumT(.integer):
-                return [ "\(propertyToAssign) = [decoder decodeInteger];" ]
+                return [ "self->\(propertyToAssign) = [decoder decodeInteger];" ]
             case .boolean:
-                return [ "\(propertyToAssign) = [decoder decodeBOOL];" ]
+                return [ "self->\(propertyToAssign) = [decoder decodeBOOL];" ]
             case .float:
-                return [ "\(propertyToAssign) = [unpackder decodeDouble];" ]
+                return [ "self->\(propertyToAssign) = [unpackder decodeDouble];" ]
             case let .map(valueType: valueType):
-                return [ "\(propertyToAssign) = [decoder decodeDictionaryWithKeyClass:[NSString class] objectClass:\(valueType?.objcClassInstance(with: params) ?? "Nil")];" ]
+                return [ "self->\(propertyToAssign) = [decoder decodeDictionaryWithKeyClass:[NSString class] objectClass:\(valueType?.objcClassInstance(with: params) ?? "Nil")];" ]
             case let .array(itemType: itemType):
-                return [ "\(propertyToAssign) = [decoder decodeArrayOfClass:\(itemType?.objcClassInstance(with: params) ?? "Nil")];" ]
+                return [ "self->\(propertyToAssign) = [decoder decodeArrayOfClass:\(itemType?.objcClassInstance(with: params) ?? "Nil")];" ]
             case let .set(itemType: itemType):
-                return [ "\(propertyToAssign) = [decoder decodeSetOfClass:\(itemType?.objcClassInstance(with: params) ?? "Nil")];" ]
+                return [ "self->\(propertyToAssign) = [decoder decodeSetOfClass:\(itemType?.objcClassInstance(with: params) ?? "Nil")];" ]
             case let .object(objectRoot):
-                return [ "\(propertyToAssign) = [decoder decodeObjectOfClass:[\(objectRoot.className(with: params)) class]];" ]
+                return [ "self->\(propertyToAssign) = [decoder decodeObjectOfClass:[\(objectRoot.className(with: params)) class]];" ]
             case .enumT(.string):
-                return ["\(propertyToAssign) = \(enumFromStringMethodName(propertyName: firstName, className: className))([decoder decodeObjectOfClass:[NSString class]]);"]
+                return ["self->\(propertyToAssign) = \(enumFromStringMethodName(propertyName: firstName, className: className))([decoder decodeObjectOfClass:[NSString class]]);"]
             case let .reference(with: ref):
                 return ref.force().map {
                     renderPropertyInit2(propertyToAssign, schema: $0, firstName: firstName)
@@ -73,7 +73,7 @@ extension ObjCModelRenderer {
                                     let cond = "!strncmp(key, \"\(name)\", keyLen)"
                                     let body: () -> [String] = {
                                         renderPropertyInit2("_\(name.snakeCaseToPropertyName())", schema: property.schema, firstName: name) + [
-                                            "_\(self.dirtyPropertiesIVarName).\(dirtyPropertyOption(propertyName: name, className: self.className)) = 1;"
+                                            "self->_\(self.dirtyPropertiesIVarName).\(dirtyPropertyOption(propertyName: name, className: self.className)) = 1;"
                                         ]
                                     }
                                     if i == 0 {
@@ -83,14 +83,13 @@ extension ObjCModelRenderer {
                                     }
                                 }
                             }
-                            } +
-                            [ ObjCIR.SwitchCase.caseStmt(condition: "0") {[
-                                "self = nil; return nil;"
-                                ]}
-                        ]
+                            }
                     }
                         ],
                     "}];",
+                    ObjCIR.ifStmt("decoder.error", body: {[
+                        "self = nil;",
+                        "return nil;"]}),
                 "return self;"
             ]
         }
